@@ -6,7 +6,7 @@ const ExpressError = require("../expressError");
 
 router.use(express.json());
 
-// get all companies from database return with json
+// get all companies from database return {companies: [{code, name}, ...]}
 router.get("/", async function(req, res, next){
   try{
     const results = await db.query(
@@ -20,7 +20,7 @@ router.get("/", async function(req, res, next){
   }
 });
 
-// get one company from database return with json
+// get one company from database return {company: {code, name, description}}
 router.get('/:code', async function(req, res, next){
   try{
     const code = req.params.code;
@@ -41,7 +41,7 @@ router.get('/:code', async function(req, res, next){
   }
 });
 
-// create a company, return with json
+// create a company, return {company: {code, name, description}}
 router.post('/', async function(req, res, next){
   try{
 
@@ -61,7 +61,7 @@ router.post('/', async function(req, res, next){
   }
 });
 
-// update a company, return with json
+// update a company, return {company: {code, name, description}}
 router.put('/:code', async function(req, res, next){
   try{
     const {name, description} = req.body;
@@ -85,7 +85,7 @@ router.put('/:code', async function(req, res, next){
   }
 });
 
-// delete a company, return with json
+// delete a company, return {status: "deleted"}
 router.delete("/:code", async function (req, res, next) {
   try {
     const result = await db.query(
@@ -98,7 +98,7 @@ router.delete("/:code", async function (req, res, next) {
     if (result.rows.length == 0) {
       throw new ExpressError(`delete failed, ${code} does not exist`, 404)
     } else {
-      return res.json({message: "deleted"});
+      return res.json({status: "deleted"});
     }
   }
 
