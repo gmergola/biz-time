@@ -15,7 +15,8 @@ router.get("/", async function(req, res, next){
        );
 
     return res.json(results.rows);
-  }catch (err){
+  }
+  catch (err){
     return next(err);
   }
 });
@@ -26,17 +27,29 @@ router.get('/:code', async function(req, res, next){
     const code = req.params.code;
     
     const results = await db.query(
-      `SELECT code, name, description
-       FROM companies
-       WHERE code=$1`, [code]
+      `SELECT c.code, c.name, c.description, i.id
+      FROM companies AS c
+      FULL JOIN invoices AS i
+      ON c.code = i.comp_code
+      WHERE c.code = $1`, [code]
        );
-    
+       
     if(results.rows.length === 0){
       throw new ExpressError(`${code} does not exist!`, 404);
     }
-    return res.json({company: results.rows[0]});
 
-  }catch (err){
+    const companyInvoices = results.rows;
+
+    let ids = companyInvoices.map(company => company.id);
+    if ( ids[0] === null ) {
+      ids = [];
+    }
+    results.rows[0].invoices = ids;
+    delete results.rows[0].id;
+
+    return res.json({company: results.rows[0]});
+  }
+  catch (err){
     return next(err);
   }
 });
@@ -55,8 +68,8 @@ router.post('/', async function(req, res, next){
     );
 
     return res.status(201).json({company: result.rows[0]});
-
-  }catch(err){
+  }
+  catch(err){
     return next(err);
   }
 });
@@ -80,7 +93,8 @@ router.put('/:code', async function(req, res, next){
     }
 
     return res.json({company: result.rows[0]})
-  }catch(err){
+  }
+  catch(err){
     return next(err);
   }
 });
@@ -101,7 +115,6 @@ router.delete("/:code", async function (req, res, next) {
       return res.json({status: "deleted"});
     }
   }
-
   catch (err) {
     return next(err);
   }
